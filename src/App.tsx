@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Header from "./Header";
-import { PendingSection } from "./PendingSection";
+import PendingSection from "./PendingSection";
+import ProcessingSection from "./ProcessingSection";
 import { CompletedSection } from "./CompletedSection";
 import type { Order } from "./models";
 import { getCurrentTime } from "./utils";
@@ -75,9 +76,16 @@ export default function App() {
           onVIPOrderAdd={() => handleOrderAdd("VIP")}
         />
 
+        {processingId && (
+          <ProcessingSection
+            orders={orders.filter((o) => o.id === processingId)}
+          />
+        )}
+
         <PendingSection
-          orders={orders.filter((o) => o.status === "PENDING")}
-          processingId={processingId}
+          orders={orders.filter(
+            (o) => o.status === "PENDING" && o.id !== processingId,
+          )}
         />
 
         <hr className="border-gray-200" />

@@ -3,10 +3,9 @@ import OrderCard from "./OrderCard";
 
 interface Props {
   orders: Order[];
-  processingId: string | null;
 }
 
-export function PendingSection({ orders, processingId }: Props) {
+export default function PendingSection({ orders }: Props) {
   return (
     <section>
       <div className="flex items-center justify-between gap-2 mb-8 border-b border-gray-200 pb-5">
@@ -30,13 +29,7 @@ export function PendingSection({ orders, processingId }: Props) {
           </div>
         ) : (
           orders.map((order) => {
-            return (
-              <OrderCard
-                order={order}
-                key={order.id}
-                isProcessing={order.id === processingId}
-              />
-            );
+            return <OrderCard order={order} key={order.id} />;
           })
         )}
       </div>
