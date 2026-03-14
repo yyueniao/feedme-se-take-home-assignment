@@ -1,42 +1,55 @@
-import { useState } from "react";
+import { useState, useEffect, useEffectEvent } from "react";
 import Header from "./Header";
 import PendingSection from "./PendingSection";
 import ProcessingSection from "./ProcessingSection";
 import { CompletedSection } from "./CompletedSection";
-import type { Order } from "./models";
+import type { Bot, Order } from "./models";
 import { getCurrentTime } from "./utils";
 import ActionPanel from "./ActionPanel";
 
 export default function App() {
-  const [processingOrder, setProcessingOrder] = useState<Order | null>(null);
   const [pendingOrders, setPendingOrders] = useState<Order[]>([]);
   const [completedOrders, setCompletedOrders] = useState<Order[]>([]);
+  const [bots, setBots] = useState<Bot[]>([]);
 
-  const processNextOrder = () => {
-    setPendingOrders((prevPending) => {
-      if (prevPending.length === 0) return prevPending;
-
-      const [nextOrder, ...remainingOrders] = prevPending;
-
-      setProcessingOrder(nextOrder);
-
-      setTimeout(() => {
-        handleCompleteOrder(nextOrder);
-      }, 10000);
-
-      return remainingOrders;
-    });
-  };
-
-  const handleCompleteOrder = (order: Order) => {
-    const finishedOrder: Order = {
+  const handleCompleteOrder = (order: Order, botId: number) => {
+    const completedOrder: Order = {
       ...order,
       status: "COMPLETED",
       finishTime: getCurrentTime(),
     };
-    setCompletedOrders((prev) => [finishedOrder, ...prev]);
-    setProcessingOrder(null);
-    processNextOrder();
+
+    setCompletedOrders((prev) => [completedOrder, ...prev]);
+
+    setBots((prevBots) =>
+      prevBots.map((b) => (b.id === botId ? { ...b, currentOrder: null } : b)),
+    );
+  };
+
+  const processOrder = useEffectEvent((bot: Bot) => {
+    const nextOrder = pendingOrders[0];
+    setPendingOrders((prev) => prev.toSpliced(0, 1));
+    setBots((prevBots) =>
+      prevBots.map((b) =>
+        b.id === bot.id ? { ...b, currentOrder: nextOrder } : b,
+      ),
+    );
+    setTimeout(() => {
+      handleCompleteOrder(nextOrder, bot.id);
+    }, 10000);
+  });
+
+  useEffect(() => {
+    const idleBot = bots.find((b) => b.currentOrder === null);
+
+    if (idleBot && pendingOrders.length > 0) {
+      processOrder(idleBot);
+    }
+  }, [pendingOrders, bots]);
+
+  const handleAddBot = () => {
+    const newBot: Bot = { id: Date.now(), currentOrder: null };
+    setBots((prev) => [...prev, newBot]);
   };
 
   const handleOrderAdd = (type: "NORMAL" | "VIP") => {
@@ -49,16 +62,11 @@ export default function App() {
     };
 
     setPendingOrders((prev) => {
-      let updatedPending: Order[];
-
       if (type === "VIP") {
-        const lastVipIndex = prev.findLastIndex((o) => o.type === "VIP");
-        updatedPending = prev.toSpliced(lastVipIndex + 1, 0, newOrder);
-      } else {
-        updatedPending = [...prev, newOrder];
+        const lastVip = prev.findLastIndex((o) => o.type === "VIP");
+        return prev.toSpliced(lastVip + 1, 0, newOrder);
       }
-
-      return updatedPending;
+      return [...prev, newOrder];
     });
   };
 
@@ -70,9 +78,10 @@ export default function App() {
         <ActionPanel
           onNormalOrderAdd={() => handleOrderAdd("NORMAL")}
           onVIPOrderAdd={() => handleOrderAdd("VIP")}
+          onAddBot={handleAddBot}
         />
 
-        {processingOrder && <ProcessingSection orders={[processingOrder]} />}
+        <ProcessingSection bots={bots} />
 
         <PendingSection orders={pendingOrders} />
 
