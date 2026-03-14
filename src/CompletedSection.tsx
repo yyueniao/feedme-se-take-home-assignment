@@ -30,7 +30,9 @@ export function CompletedSection({ orders }: Props) {
             </p>
           </div>
         ) : (
-          orders.map((order) => <OrderCard key={order.id} order={order} />)
+          orders.map((order) => (
+            <OrderCard key={order.id} order={order} type="COMPLETED" />
+          ))
         )}
       </div>
     </section>

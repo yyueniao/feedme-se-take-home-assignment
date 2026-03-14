@@ -17,7 +17,6 @@ export default function App() {
   const handleOrderComplete = (order: Order) => {
     const completedOrder: Order = {
       ...order,
-      status: "COMPLETED",
       finishTime: getCurrentTime(),
     };
 
@@ -45,7 +44,6 @@ export default function App() {
       id: nextOrderId,
       orderTime: getCurrentTime(),
       finishTime: null,
-      status: "PENDING",
       type,
     };
     setNextOrderId((prev) => prev + 1);

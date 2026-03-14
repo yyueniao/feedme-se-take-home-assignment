@@ -29,7 +29,7 @@ export default function PendingSection({ orders }: Props) {
           </div>
         ) : (
           orders.map((order) => {
-            return <OrderCard order={order} key={order.id} />;
+            return <OrderCard order={order} key={order.id} type="PENDING" />;
           })
         )}
       </div>

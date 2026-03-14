@@ -62,7 +62,7 @@ export default function ProcessingSection({ bots }: Props) {
 
               {bot.currentOrder ? (
                 <div className="w-full">
-                  <OrderCard order={bot.currentOrder} isProcessing={true} />
+                  <OrderCard order={bot.currentOrder} type="PROCESSING" />
                 </div>
               ) : (
                 <div className="text-center space-y-1">
