@@ -7,6 +7,7 @@ interface Return {
   completedOrders: Order[];
   addOrder: (type: "NORMAL" | "VIP") => void;
   completeOrder: (order: Order) => void;
+  cancelOrder: (order: Order) => void;
   processNextOrder: () => void;
 }
 
@@ -24,9 +25,20 @@ export function useOrders(): Return {
     setCompletedOrders((prev) => [completedOrder, ...prev]);
   };
 
+  const cancelOrder = (order: Order) => {
+    setPendingOrders((prev) => {
+      if (order.type === "NORMAL") {
+        const lastVip = prev.findLastIndex((o) => o.type === "VIP");
+        return prev.toSpliced(lastVip + 1, 0, order);
+      }
+      return [order, ...prev];
+    });
+  };
+
   const processNextOrder = (): void => {
     setPendingOrders((prev) => prev.toSpliced(0, 1));
   };
+
   const handleOrderAdd = (type: "NORMAL" | "VIP") => {
     const newOrder: Order = {
       id: nextOrderId,
@@ -44,10 +56,12 @@ export function useOrders(): Return {
       return [...prev, newOrder];
     });
   };
+
   return {
     pendingOrders,
     completedOrders,
     completeOrder,
+    cancelOrder,
     processNextOrder,
     addOrder: handleOrderAdd,
   };

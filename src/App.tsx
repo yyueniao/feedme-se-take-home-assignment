@@ -11,13 +11,15 @@ export default function App() {
     pendingOrders,
     completedOrders,
     completeOrder,
+    cancelOrder,
     processNextOrder,
     addOrder,
   } = useOrders();
 
-  const { bots, addBot } = useBots({
+  const { bots, addBot, removeNewestBot } = useBots({
     pendingOrders,
     onOrderComplete: completeOrder,
+    onOrderCancel: cancelOrder,
     processNextOrder,
   });
 
@@ -30,6 +32,7 @@ export default function App() {
           onNormalOrderAdd={() => addOrder("NORMAL")}
           onVIPOrderAdd={() => addOrder("VIP")}
           onAddBot={addBot}
+          onRemoveBot={removeNewestBot}
         />
 
         <ProcessingSection bots={bots} />

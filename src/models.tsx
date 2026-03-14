@@ -8,4 +8,5 @@ export interface Order {
 export interface Bot {
   id: number;
   currentOrder: Order | null;
+  currentTask: number | null;
 }
