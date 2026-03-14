@@ -8,6 +8,8 @@ import { getCurrentTime } from "./utils";
 import ActionPanel from "./ActionPanel";
 
 export default function App() {
+  const [nextOrderId, setNextOrderId] = useState(1);
+  const [nextBotId, setNextBotId] = useState(1);
   const [pendingOrders, setPendingOrders] = useState<Order[]>([]);
   const [completedOrders, setCompletedOrders] = useState<Order[]>([]);
   const [bots, setBots] = useState<Bot[]>([]);
@@ -48,18 +50,20 @@ export default function App() {
   }, [pendingOrders, bots]);
 
   const handleAddBot = () => {
-    const newBot: Bot = { id: Date.now(), currentOrder: null };
+    const newBot: Bot = { id: nextBotId, currentOrder: null };
+    setNextBotId((prev) => prev + 1);
     setBots((prev) => [...prev, newBot]);
   };
 
   const handleOrderAdd = (type: "NORMAL" | "VIP") => {
     const newOrder: Order = {
-      id: Math.random().toString(36).slice(2, 11).toUpperCase(),
+      id: nextOrderId,
       orderTime: getCurrentTime(),
       finishTime: null,
       status: "PENDING",
       type,
     };
+    setNextOrderId((prev) => prev + 1);
 
     setPendingOrders((prev) => {
       if (type === "VIP") {

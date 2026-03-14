@@ -1,5 +1,5 @@
 export interface Order {
-  id: string;
+  id: number;
   orderTime: string;
   finishTime: string | null;
   status: "PENDING" | "COMPLETED";
