@@ -2,7 +2,7 @@ import Header from "./Header";
 import PendingSection from "./PendingSection";
 import ProcessingSection from "./ProcessingSection";
 import { CompletedSection } from "./CompletedSection";
-import ActionPanel from "./ActionPanel";
+import ActionPanel from "./actionPanel/ActionPanel";
 import { useBots } from "./useBots";
 import { useOrders } from "./useOrders";
 
