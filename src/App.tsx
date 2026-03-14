@@ -1,4 +1,4 @@
-import { useState, useEffect, useEffectEvent } from "react";
+import { useState } from "react";
 import Header from "./Header";
 import PendingSection from "./PendingSection";
 import ProcessingSection from "./ProcessingSection";
@@ -6,15 +6,15 @@ import { CompletedSection } from "./CompletedSection";
 import type { Bot, Order } from "./models";
 import { getCurrentTime } from "./utils";
 import ActionPanel from "./ActionPanel";
+import { useBots } from "./useBots";
 
 export default function App() {
   const [nextOrderId, setNextOrderId] = useState(1);
   const [nextBotId, setNextBotId] = useState(1);
   const [pendingOrders, setPendingOrders] = useState<Order[]>([]);
   const [completedOrders, setCompletedOrders] = useState<Order[]>([]);
-  const [bots, setBots] = useState<Bot[]>([]);
 
-  const handleCompleteOrder = (order: Order, botId: number) => {
+  const handleOrderComplete = (order: Order) => {
     const completedOrder: Order = {
       ...order,
       status: "COMPLETED",
@@ -22,32 +22,17 @@ export default function App() {
     };
 
     setCompletedOrders((prev) => [completedOrder, ...prev]);
-
-    setBots((prevBots) =>
-      prevBots.map((b) => (b.id === botId ? { ...b, currentOrder: null } : b)),
-    );
   };
 
-  const processOrder = useEffectEvent((bot: Bot) => {
-    const nextOrder = pendingOrders[0];
+  const handleOrderProcess = (): void => {
     setPendingOrders((prev) => prev.toSpliced(0, 1));
-    setBots((prevBots) =>
-      prevBots.map((b) =>
-        b.id === bot.id ? { ...b, currentOrder: nextOrder } : b,
-      ),
-    );
-    setTimeout(() => {
-      handleCompleteOrder(nextOrder, bot.id);
-    }, 10000);
+  };
+
+  const { bots, setBots } = useBots({
+    pendingOrders,
+    onOrderComplete: handleOrderComplete,
+    onOrderProcess: handleOrderProcess,
   });
-
-  useEffect(() => {
-    const idleBot = bots.find((b) => b.currentOrder === null);
-
-    if (idleBot && pendingOrders.length > 0) {
-      processOrder(idleBot);
-    }
-  }, [pendingOrders, bots]);
 
   const handleAddBot = () => {
     const newBot: Bot = { id: nextBotId, currentOrder: null };
