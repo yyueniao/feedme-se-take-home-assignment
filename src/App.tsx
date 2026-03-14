@@ -3,6 +3,7 @@ import Header from "./Header";
 import { PendingSection } from "./PendingSection";
 import { CompletedSection } from "./CompletedSection";
 import type { Order } from "./models";
+import { getCurrentTime } from "./utils";
 
 export default function App() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -17,7 +18,13 @@ export default function App() {
       setTimeout(() => {
         setOrders((prev) => {
           const updatedOrders = prev.map((o) =>
-            o.id === nextOrder.id ? { ...o, status: "COMPLETED" as const } : o,
+            o.id === nextOrder.id
+              ? {
+                  ...o,
+                  status: "COMPLETED" as const,
+                  finishTime: getCurrentTime(),
+                }
+              : o,
           );
 
           setProcessingId(null);
@@ -32,11 +39,8 @@ export default function App() {
   const handleOrderAdd = () => {
     const newOrder: Order = {
       id: Math.random().toString(36).slice(2, 11).toUpperCase(),
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      }),
+      orderTime: getCurrentTime(),
+      finishTime: null,
       status: "PENDING",
     };
 

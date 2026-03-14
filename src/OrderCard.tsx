@@ -87,7 +87,7 @@ export default function OrderCard({ order, isProcessing = false }: Props) {
         <p
           className={`text-sm font-bold font-mono ${isCompleted ? "text-green-600" : "text-gray-700"}`}
         >
-          {order.timestamp}
+          {isCompleted ? order.finishTime : order.orderTime}
         </p>
       </div>
     </div>
