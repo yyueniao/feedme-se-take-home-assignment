@@ -4,13 +4,13 @@ import type { Order, Bot } from "./models";
 interface Props {
   pendingOrders: Order[];
   onOrderComplete: (order: Order) => void;
-  onOrderProcess: () => void;
+  processNextOrder: () => void;
 }
 
 export function useBots({
   pendingOrders,
   onOrderComplete,
-  onOrderProcess,
+  processNextOrder,
 }: Props): { bots: Bot[]; addBot: () => void } {
   const [nextBotId, setNextBotId] = useState(1);
   const [bots, setBots] = useState<Bot[]>([]);
@@ -30,7 +30,7 @@ export function useBots({
   };
 
   const processOrder = useEffectEvent((bot: Bot, order: Order) => {
-    onOrderProcess();
+    processNextOrder();
     setBots((prevBots) =>
       prevBots.map((b) =>
         b.id === bot.id ? { ...b, currentOrder: order } : b,

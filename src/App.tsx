@@ -1,54 +1,25 @@
-import { useState } from "react";
 import Header from "./Header";
 import PendingSection from "./PendingSection";
 import ProcessingSection from "./ProcessingSection";
 import { CompletedSection } from "./CompletedSection";
-import type { Order } from "./models";
-import { getCurrentTime } from "./utils";
 import ActionPanel from "./ActionPanel";
 import { useBots } from "./useBots";
+import { useOrders } from "./useOrders";
 
 export default function App() {
-  const [nextOrderId, setNextOrderId] = useState(1);
-  const [pendingOrders, setPendingOrders] = useState<Order[]>([]);
-  const [completedOrders, setCompletedOrders] = useState<Order[]>([]);
-
-  const handleOrderComplete = (order: Order) => {
-    const completedOrder: Order = {
-      ...order,
-      finishTime: getCurrentTime(),
-    };
-
-    setCompletedOrders((prev) => [completedOrder, ...prev]);
-  };
-
-  const handleOrderProcess = (): void => {
-    setPendingOrders((prev) => prev.toSpliced(0, 1));
-  };
+  const {
+    pendingOrders,
+    completedOrders,
+    completeOrder,
+    processNextOrder,
+    addOrder,
+  } = useOrders();
 
   const { bots, addBot } = useBots({
     pendingOrders,
-    onOrderComplete: handleOrderComplete,
-    onOrderProcess: handleOrderProcess,
+    onOrderComplete: completeOrder,
+    processNextOrder,
   });
-
-  const handleOrderAdd = (type: "NORMAL" | "VIP") => {
-    const newOrder: Order = {
-      id: nextOrderId,
-      orderTime: getCurrentTime(),
-      finishTime: null,
-      type,
-    };
-    setNextOrderId((prev) => prev + 1);
-
-    setPendingOrders((prev) => {
-      if (type === "VIP") {
-        const lastVip = prev.findLastIndex((o) => o.type === "VIP");
-        return prev.toSpliced(lastVip + 1, 0, newOrder);
-      }
-      return [...prev, newOrder];
-    });
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans antialiased">
@@ -56,8 +27,8 @@ export default function App() {
 
       <main className="max-w-7xl mx-auto p-6 md:p-10 space-y-10">
         <ActionPanel
-          onNormalOrderAdd={() => handleOrderAdd("NORMAL")}
-          onVIPOrderAdd={() => handleOrderAdd("VIP")}
+          onNormalOrderAdd={() => addOrder("NORMAL")}
+          onVIPOrderAdd={() => addOrder("VIP")}
           onAddBot={addBot}
         />
 
