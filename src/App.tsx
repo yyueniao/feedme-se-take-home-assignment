@@ -8,33 +8,35 @@ import { getCurrentTime } from "./utils";
 import ActionPanel from "./ActionPanel";
 
 export default function App() {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [processingId, setProcessingId] = useState<string | null>(null);
+  const [processingOrder, setProcessingOrder] = useState<Order | null>(null);
+  const [pendingOrders, setPendingOrders] = useState<Order[]>([]);
+  const [completedOrders, setCompletedOrders] = useState<Order[]>([]);
 
-  const processNextOrder = (currentOrders: Order[]) => {
-    const nextOrder = currentOrders.find((o) => o.status === "PENDING");
+  const processNextOrder = () => {
+    setPendingOrders((prevPending) => {
+      if (prevPending.length === 0) return prevPending;
 
-    if (nextOrder) {
-      setProcessingId(nextOrder.id);
+      const [nextOrder, ...remainingOrders] = prevPending;
+
+      setProcessingOrder(nextOrder);
 
       setTimeout(() => {
-        setOrders((prev) => {
-          const updatedOrders = prev.map((o) =>
-            o.id === nextOrder.id
-              ? {
-                  ...o,
-                  status: "COMPLETED" as const,
-                  finishTime: getCurrentTime(),
-                }
-              : o,
-          );
-
-          setProcessingId(null);
-          processNextOrder(updatedOrders);
-          return updatedOrders;
-        });
+        handleCompleteOrder(nextOrder);
       }, 10000);
-    }
+
+      return remainingOrders;
+    });
+  };
+
+  const handleCompleteOrder = (order: Order) => {
+    const finishedOrder: Order = {
+      ...order,
+      status: "COMPLETED",
+      finishTime: getCurrentTime(),
+    };
+    setCompletedOrders((prev) => [finishedOrder, ...prev]);
+    setProcessingOrder(null);
+    processNextOrder();
   };
 
   const handleOrderAdd = (type: "NORMAL" | "VIP") => {
@@ -46,23 +48,17 @@ export default function App() {
       type,
     };
 
-    setOrders((prevOrders) => {
-      let newOrders: Order[];
+    setPendingOrders((prev) => {
+      let updatedPending: Order[];
 
       if (type === "VIP") {
-        const lastVipIndex = prevOrders.findLastIndex(
-          (o) => o.type === "VIP" && o.status === "PENDING",
-        );
-        newOrders = prevOrders.toSpliced(lastVipIndex + 1, 0, newOrder);
+        const lastVipIndex = prev.findLastIndex((o) => o.type === "VIP");
+        updatedPending = prev.toSpliced(lastVipIndex + 1, 0, newOrder);
       } else {
-        newOrders = [...prevOrders, newOrder];
+        updatedPending = [...prev, newOrder];
       }
 
-      if (!processingId) {
-        processNextOrder(newOrders);
-      }
-
-      return newOrders;
+      return updatedPending;
     });
   };
 
@@ -76,23 +72,13 @@ export default function App() {
           onVIPOrderAdd={() => handleOrderAdd("VIP")}
         />
 
-        {processingId && (
-          <ProcessingSection
-            orders={orders.filter((o) => o.id === processingId)}
-          />
-        )}
+        {processingOrder && <ProcessingSection orders={[processingOrder]} />}
 
-        <PendingSection
-          orders={orders.filter(
-            (o) => o.status === "PENDING" && o.id !== processingId,
-          )}
-        />
+        <PendingSection orders={pendingOrders} />
 
         <hr className="border-gray-200" />
 
-        <CompletedSection
-          orders={orders.filter((o) => o.status === "COMPLETED")}
-        />
+        <CompletedSection orders={completedOrders} />
       </main>
     </div>
   );
