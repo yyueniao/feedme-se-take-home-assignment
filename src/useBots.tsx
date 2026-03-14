@@ -1,10 +1,4 @@
-import {
-  useEffectEvent,
-  useEffect,
-  useState,
-  type SetStateAction,
-  type Dispatch,
-} from "react";
+import { useEffectEvent, useEffect, useState } from "react";
 import type { Order, Bot } from "./models";
 
 interface Props {
@@ -17,8 +11,15 @@ export function useBots({
   pendingOrders,
   onOrderComplete,
   onOrderProcess,
-}: Props): { bots: Bot[]; setBots: Dispatch<SetStateAction<Bot[]>> } {
+}: Props): { bots: Bot[]; addBot: () => void } {
+  const [nextBotId, setNextBotId] = useState(1);
   const [bots, setBots] = useState<Bot[]>([]);
+
+  const addBot = () => {
+    const newBot: Bot = { id: nextBotId, currentOrder: null };
+    setNextBotId((prev) => prev + 1);
+    setBots((prev) => [...prev, newBot]);
+  };
 
   const handleOrderComplete = (order: Order, botId: number) => {
     onOrderComplete(order);
@@ -52,5 +53,5 @@ export function useBots({
     }
   }, [pendingOrders, bots]);
 
-  return { bots, setBots };
+  return { bots, addBot };
 }

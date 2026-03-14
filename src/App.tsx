@@ -3,14 +3,13 @@ import Header from "./Header";
 import PendingSection from "./PendingSection";
 import ProcessingSection from "./ProcessingSection";
 import { CompletedSection } from "./CompletedSection";
-import type { Bot, Order } from "./models";
+import type { Order } from "./models";
 import { getCurrentTime } from "./utils";
 import ActionPanel from "./ActionPanel";
 import { useBots } from "./useBots";
 
 export default function App() {
   const [nextOrderId, setNextOrderId] = useState(1);
-  const [nextBotId, setNextBotId] = useState(1);
   const [pendingOrders, setPendingOrders] = useState<Order[]>([]);
   const [completedOrders, setCompletedOrders] = useState<Order[]>([]);
 
@@ -27,17 +26,11 @@ export default function App() {
     setPendingOrders((prev) => prev.toSpliced(0, 1));
   };
 
-  const { bots, setBots } = useBots({
+  const { bots, addBot } = useBots({
     pendingOrders,
     onOrderComplete: handleOrderComplete,
     onOrderProcess: handleOrderProcess,
   });
-
-  const handleAddBot = () => {
-    const newBot: Bot = { id: nextBotId, currentOrder: null };
-    setNextBotId((prev) => prev + 1);
-    setBots((prev) => [...prev, newBot]);
-  };
 
   const handleOrderAdd = (type: "NORMAL" | "VIP") => {
     const newOrder: Order = {
@@ -65,7 +58,7 @@ export default function App() {
         <ActionPanel
           onNormalOrderAdd={() => handleOrderAdd("NORMAL")}
           onVIPOrderAdd={() => handleOrderAdd("VIP")}
-          onAddBot={handleAddBot}
+          onAddBot={addBot}
         />
 
         <ProcessingSection bots={bots} />
